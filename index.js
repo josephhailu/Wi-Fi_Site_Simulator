@@ -290,17 +290,19 @@ class GameScene extends Phaser.Scene {
                             scale: .7,
                             ease: 'Linear',
                             duration: 500,
+                            onComplete: this.refreshCoverageScore.bind(this),
                         });
                     } else {
+                        
                         this.tweens.add({
                             targets: gameObjectContainer,
                             scale: 1,
                             ease: 'Linear',
                             duration: 500,
+                            onComplete: this.refreshCoverageScore.bind(this), 
                         });
                     }
-                    this.coverageScore = this.calculateCoverageScore(this.antennas, this.mapCoverageBounds);
-                    this.events.emit('coverageScore', this.coverageScore);
+                    
                 }, this);
 
                 let touchingInterferenceObject = this.calculateDistanceFromInterferenceObjects(this.mapObjects, antennaContainer.x - antennaContainer.displayWidth / 2, antennaContainer.y - antennaContainer.displayHeight / 2, antennaContainer.displayWidth, antennaContainer.displayHeight, 0, this)
@@ -337,6 +339,11 @@ class GameScene extends Phaser.Scene {
           
         }, this);
 
+    }
+
+    refreshCoverageScore(){
+        this.coverageScore = this.calculateCoverageScore(this.antennas, this.mapCoverageBounds);
+        this.events.emit('coverageScore', this.coverageScore);
     }
 
     update(time, delta) {
