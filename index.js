@@ -93,8 +93,7 @@ class GameScene extends Phaser.Scene {
         // poly.depth = 95
         // this.interferenceZoneGroup.add(poly);
 
-
-
+ 
         //set click events on objects in worldLayer
         this.input.keyboard.on('keydown-S', () => {
             this.events.emit('toggleMenu');
@@ -124,7 +123,7 @@ class GameScene extends Phaser.Scene {
                 }
                 if (found) {
                     if (alreadyFound) {
-                       
+                       //TODO:add additional Scoring logic
                     } else {
                         
                         this.events.emit('addScore');
@@ -181,7 +180,7 @@ class GameScene extends Phaser.Scene {
         // Help text that has a "fixed" position on the screen
         this.add
             .text(16, 16, 'Arrow keys to move\nPress "S" to show stats menu', {
-                font: "18px monospace",
+                font: "18px Arial",
                 fill: "#000000",
                 padding: {
                     x: 20,
@@ -551,7 +550,7 @@ class GameScene extends Phaser.Scene {
 
         for (let index = 0; index < listOfAntennas.length; index++) {
             const element = listOfAntennas[index];
-
+            
             let elementBounds =[//finesse lat and ln calc to get a rough estimate of coverage
                 [Math.abs(element.x - (element.scale * element.width/2)), Math.abs(element.y - (element.scale * element.height/2))],
                 [Math.abs(element.x + (element.scale * element.width/2)), Math.abs(element.y - (element.scale * element.height/2))],
