@@ -1,4 +1,3 @@
-console.log(turf);
 class GameScene extends Phaser.Scene {
     constructor() {
         super('game-scene')
@@ -33,7 +32,6 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
-        this.toggleInterferenceZones = true;
         this.map = this.make.tilemap({
             key: "map"
         });
