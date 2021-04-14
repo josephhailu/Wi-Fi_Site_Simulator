@@ -8,13 +8,15 @@ class GameScene extends Phaser.Scene {
 
         this.mapCoverageBounds = []
 
+        this.score= 0
+        this.interferenceObjectsFound = 0
+        this.coverageScore= 0
+
         this.antennas = []
         this.antennaContainerGroup
         this.antennaMaxWidth = 350
         this.antennaMaxHeight = 350
         this.maxAntennas
-
-        this.coverageScore
 
         this.toggleInterferenceZones
         this.interferenceZoneGroup
@@ -123,13 +125,13 @@ class GameScene extends Phaser.Scene {
                     if (alreadyFound) {
                        //TODO:add additional Scoring logic
                     } else {
-                        
-                        this.events.emit('addScore');
+                        this.interferenceObjectsFound++;
+                        this.score += 1000; 
                     }
                 } else {
-                     
-                    this.events.emit('subtractScore');
+                    this.score -= this.score <=0? 0: 10; 
                 }
+                this.events.emit('updateScene1Score',this.score ,this.interferenceObjectsFound);
             } else { 
                
             }
@@ -206,7 +208,7 @@ class GameScene extends Phaser.Scene {
                 this.antennaContainerGroup.children.entries[this.antennaContainerGroup.children.size - 1].destroy();
                 this.antennas.pop();
                 this.coverageScore = this.calculateCoverageScore(this.antennas, this.mapCoverageBounds);
-                this.events.emit('antennaCount', this.coverageScore, this.antennas.length);  
+                this.events.emit('updateScene2Menu', this.coverageScore, this.antennas.length);  
             }
         }, this);
 
@@ -238,7 +240,7 @@ class GameScene extends Phaser.Scene {
                 //TODO: add way to decrement score if antennas overlap
                 this.physics.add.collider(this.antennaContainerGroup, antennaContainer, () => {
                     this.coverageScore = this.coverageScore *.92;
-                    this.events.emit('coverageScore', this.coverageScore);
+                    this.events.emit('updateScene2Menu', this.coverageScore, this.antennas.length);
                 }); 
 
                 //give dragged object a different colour
@@ -265,7 +267,7 @@ class GameScene extends Phaser.Scene {
                     }
 
                     this.coverageScore = this.calculateCoverageScore(this.antennas, this.mapCoverageBounds);
-                    this.events.emit('coverageScore', this.coverageScore);
+                    this.events.emit('updateScene2Menu', this.coverageScore, this.antennas.length);
                 }, this);
 
                 //when dragged, update containers position on map
@@ -321,7 +323,7 @@ class GameScene extends Phaser.Scene {
                     }); 
                 }
                 this.coverageScore = this.calculateCoverageScore(this.antennas, this.mapCoverageBounds);
-                this.events.emit('antennaCount', this.coverageScore, this.antennas.length);  
+                this.events.emit('updateScene2Menu', this.coverageScore, this.antennas.length);  
 
             }
         }, this);
@@ -331,16 +333,45 @@ class GameScene extends Phaser.Scene {
             this.interferenceZoneGroup.children.iterate((child) => {
                 child.visible = true; 
             });
-            console.log(this)
-           this.scene.manager.scenes.filter(a => a.scene.key === 'phase2menu-scene')[0].active = true;
-          
+            console.log(this.scene.manager.scenes)
+           let s = this.scene.manager.scenes.filter(a => a.scene.key === 'phase2menu-scene')[0];
+           s.scene.sendToBack();
+
+              //create final stats printout
+
+            this.cameras.add(-150, -250, 1480, 1480)
+            .setName("mini")
+            .setBackgroundColor(0x666666)
+            // .setScroll(0.9 * 960, 0.9 * 960) // looks right!
+            .setZoom(0.5);
+
+            this.add
+            .text(-160, -80, `Total Score: ${this.score}\nInterference Objects found: ${this.interferenceObjectsFound}\nSite Wi-Fi coverage: %${this.coverageScore}`, {
+                font: "48px Arial",
+                fill: "#000000",
+                padding: {
+                    x: 10,
+                    y: 10
+                },
+                backgroundColor: "#ffffff"
+            })
+            .setDepth(300);
+
+            game.renderer.snapshot(function (image) {
+                image.style.width = '1380px';
+                image.style.height = '1280px';
+                image.style.paddingLeft = '2px';
+
+                document.body.appendChild(image);
+            });
+
         }, this);
 
     }
 
     refreshCoverageScore(){
         this.coverageScore = this.calculateCoverageScore(this.antennas, this.mapCoverageBounds);
-        this.events.emit('coverageScore', this.coverageScore);
+        this.events.emit('updateScene2Menu', this.coverageScore, this.antennas.length);  
     }
 
     update(time, delta) {
@@ -640,7 +671,7 @@ class GameScene extends Phaser.Scene {
         //     }
         // } 
 
-        return total;
+        return (total*100).toFixed(2);
 
     }
 
@@ -903,19 +934,9 @@ class Phase1MenuScene extends Phaser.Scene {
         }, this);
 
         //  Listen for events from it
-        ourGame.events.on('addScore', function () {
-            this.score += 1000;
-            this.interferenceObjectsFound++;
-            info.setText(`\n\n\n\nScore : ${ this.score} \nInterference Objects Found : ${ this.interferenceObjectsFound}`);
-        }, this);
-
-        //  Listen for events from it
-        ourGame.events.on('subtractScore', function () {
-            this.score -= this.score <= 0 ? 0 : 10;
-            info.setText(`\n\n\n\nScore : ${ this.score} \nInterference Objects Found : ${ this.interferenceObjectsFound}`);
-
-        }, this);
-
+        ourGame.events.on('updateScene1Score', function (score,interferenceObjectsFound) { 
+            info.setText(`\n\n\n\nScore : ${score} \nInterference Objects Found : ${interferenceObjectsFound}`);
+        }, this); 
         //open close menu
         ourGame.events.on('toggleMenu', () => {
             toggleMenu(this);
@@ -963,20 +984,16 @@ class Phase2MenuScene extends Phaser.Scene {
             key: 'phase2menu-scene',
             active: false, 
         })
-        this.score = 2000;
-        this.interferenceObjectsFound = 0;
+       
         this.toggle = false;
  
-        this.addAntennaBtn;
-        this.antennaCount = 0;
+        this.addAntennaBtn; 
         this.confirmPhaseButton;
         this.confirmPhaseText;
     }
 
     init(data) {
-        this.score = data.score;
-        this.interferenceObjectsFound = data.interferenceObjectsFound;
-
+    
     }
 
     preload() {
@@ -992,7 +1009,7 @@ class Phase2MenuScene extends Phaser.Scene {
         this.graphics.lineStyle(1, 0x2266aa);
 
         //  Our Text object to display the Score
-        let info = this.add.text(10, 650, `Coverage Score :% ${ this.score} \nAntennas placed : ${ this.antennaCount}`, {
+        let info = this.add.text(10, 650, `Coverage Score :% ${0} \nAntennas placed : ${0}`, {
             font: '24px Arial',
             fill: '#000000'
         }).setInteractive();
@@ -1054,17 +1071,9 @@ class Phase2MenuScene extends Phaser.Scene {
         ourGame.events.on('toggleMenu', () => {
             toggleMenu(this)
         }, this);
- 
-        ourGame.events.on('antennaCount', (score,antennaCount ) => {
-            this.antennaCount =antennaCount;
-            this.score = (score * 100).toFixed(2);
-
-            info.setText(`Coverage Score :% ${ this.score} \nAntennas placed : ${ this.antennaCount}`);
-        }, this);
-
-        ourGame.events.on('coverageScore', (s) => {
-            this.score = (s * 100).toFixed(2);
-            info.setText(`Coverage Score :% ${ this.score} \nAntennas placed : ${ this.antennaCount}`);
+  
+        ourGame.events.on('updateScene2Menu', (coverageScore,antennaCount ) => { 
+            info.setText(`Coverage Score : %${ coverageScore} \nAntennas placed : ${ antennaCount}`);
         }, this);
     }
 
@@ -1073,29 +1082,9 @@ class Phase2MenuScene extends Phaser.Scene {
 
     }
 
-    endGame(scene) {
+    endGame() {
         //implement endgame
-        console.log('rip thanos');
-        this.events.emit('prepareFinalScreenShot');
-        this.confirmPhaseText.visible = false;
-        this.confirmPhaseButton.visible = false;
-
-        console.log(scene);
-        scene.scene.scenes[0].cameras.add(-150, -250, 1480, 1480)
-        .setName("mini")
-        .setBackgroundColor(0x666666)
-        // .setScroll(0.9 * 960, 0.9 * 960) // looks right!
-        .setZoom(0.6);
-
-        game.renderer.snapshot(function (image) {
-            image.style.width = '1280px';
-            image.style.height = '1280px';
-            image.style.paddingLeft = '2px';
-            snapHistory.push(image);
-            console.log('snap!');
-            document.body.appendChild(image);
-        });
-
+        this.events.emit('prepareFinalScreenShot'); 
     } 
 
 }
