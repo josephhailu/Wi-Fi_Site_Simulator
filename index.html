@@ -40,6 +40,12 @@
 <body>
     <div class="container">
 
+        <form id='wifi' action="">
+           Name <input type="text" name="name" id="">
+            Number <input type="number" name="number" id="">
+            <input type="submit" value="Submit">
+        </form>
+
         <div id="game-container"> 
            
         </div>
@@ -49,7 +55,7 @@
                 Phase 1: Walk around the map and keep an eye on your radar. <br>
                 It will react to Wi-Fi interference objects. <br> 
                 Click on the map where you think there could be a source of Wi-Fi interference. <br>
-                When you feel like you all the interference sources click the Next phase button.
+                When you feel like you found all the interference sources click the Next phase button.
             </p>
             <p>
                 Phase 2: Walk around the map and place antennas to try and get the best coverage. <br>
@@ -63,8 +69,18 @@
             </p>
         </div>
     </div>
-    
+    <script>
+        document.addEventListener('submit',function(e){
+            e.preventDefault();
+            
+            var studentName = e.target[0].value;
+            var studentNumber = e.target[1].value;
 
+            var game = runGame(studentName,studentNumber);
+        });
+
+
+    </script>   
     <script src="./outTurf.js">
     </script>
     <script src="//cdn.jsdelivr.net/npm/phaser@3.54.0/dist/phaser.js"></script>
