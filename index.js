@@ -334,9 +334,8 @@ function runGame(studentName,studentNumber){
                 this.interferenceZoneGroup.children.iterate((child) => {
                     child.visible = true; 
                 });
-                console.log(this.scene.manager.scenes)
-            let s = this.scene.manager.scenes.filter(a => a.scene.key === 'phase2menu-scene')[0];
-            s.scene.sendToBack();
+                let s = this.scene.manager.scenes.filter(a => a.scene.key === 'phase2menu-scene')[0];
+                s.scene.sendToBack();
 
                 //create final stats printout
 
@@ -347,7 +346,7 @@ function runGame(studentName,studentNumber){
                 .setZoom(0.5);
 
                 this.add
-                .text(-160, -80, `Total Score: ${this.score}\nInterference Objects found: ${this.interferenceObjectsFound}\nSite Wi-Fi coverage: %${this.coverageScore}`, {
+                .text(-160, -80, `Name: ${this.game.formInfo.name}\nNumber: ${this.game.formInfo.number}\nTotal Score: ${this.score}\nInterference Objects found: ${this.interferenceObjectsFound}\nSite Wi-Fi coverage: %${this.coverageScore}`, {
                     font: "48px Arial",
                     fill: "#000000",
                     padding: {
